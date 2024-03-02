@@ -14,7 +14,7 @@ from treasury_balance_sheet import *
 
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/main": {"origins": "https://kklugewicz.github.io/pythia-frontend/"}})
 
 @app.route('/main', methods=['POST'])
 def main():
