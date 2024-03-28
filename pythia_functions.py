@@ -197,7 +197,7 @@ def process_data(dict,full_categories):
             if value_type=='%':
                 val=float(val)
                 val=val*100
-                val= f"{val:.2f}%"
+                val= f"{val:.1f}%"
                 processed_year[category]=val
         processed_data[year]=processed_year
     yoydict=dict["YoY(past year)"]
