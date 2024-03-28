@@ -7,13 +7,25 @@ from flask_cors import CORS
 import math
 from pythia_functions import *
 
+def aprocess_data(data):
+    processed_data = {}
+    for year, values in data.items():
+        processed_values = {}
+        for key, value in values.items():
+            if isinstance(value, float) and math.isnan(value):
+                processed_values[key] = 0
+            else:
+                processed_values[key] = value
+        processed_data[year] = processed_values
+    return processed_data
+
 def discounted_cashflow(table, ticker_data):
     discount_rate = 0.095
     perpetual_growth_rate = 0.025
     yearly_free_cash_flows = []
     data = table["CF"]
     keys = list(data.keys()) 
-    keys.remove("Year over year(past year)")  
+    keys.remove("YoY(past year)")  
     company_growth_rate = []
 
     for key in keys:
@@ -72,7 +84,7 @@ def growth_rate(table):
     data = table["IS"]
     keys = list(data.keys()) 
     earnings=[]
-    keys.remove("Year over year(past year)")  
+    keys.remove("YoY(past year)")  
     company_growth_rate = []
 
     for key in keys:
@@ -98,11 +110,10 @@ def valuation(table,ticker_data):
     valuation_table["Trailing PEG Ratio"]=ticker_data.info.get('trailingPegRatio')
     valuation_table["P/FCF"]=ticker_data.info.get('freeCashflow')/ticker_data.info.get('currentPrice')
     #valuation_table["Discounted CashFlow"]=discounted_cashflow(table,ticker_data)
-    earnings_growth_rate=growth_rate(table)
+    #earnings_growth_rate=growth_rate(table)
     #valuation_table["Peter Lynch's Valuation"]=(earnings_growth_rate+ticker_data.info.get('dividendYield'))/ticker_data.info.get('trailingPE')
-    print (valuation_table)
     current_valuation_table={}
     current_valuation_table["current"]=valuation_table
-    processed_data=process_data(current_valuation_table)
+    processed_data=aprocess_data(current_valuation_table)
     corrected_dict=keys_to_strings(processed_data)
     return corrected_dict

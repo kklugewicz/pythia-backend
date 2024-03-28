@@ -6,6 +6,63 @@ from flask import request, Flask
 from flask_cors import CORS
 import math
 
+categories = {
+    "SGA%": "%",
+    "R&D%": "%",
+    "Depreciation %": "%",
+    "Operating Expense %": "%",
+    "Interest Expense %": "%",
+    "Operating Margin": "%",
+    "Total Revenue": "$",
+    "Cost Of Revenue": "$",
+    "Gross Profit": "$",
+    "Gross Profit Margin": "%",
+    "Pretax Income": "$",
+    "Net Earnings": "$",
+    "Basic EPS": "$",
+    "Net Earnings to Total": "%",
+    "Cash And Cash Equivalents": "$",
+    "Inventory": "$",
+    "Receivables": "$",
+    "Current Assets": "$",
+    "Current Ratio": 'None',  # No symbol provided
+    "Fixed Asset Turnover Ratio": 'None',  # No symbol provided
+    "Total Non-Current Assets": "$",
+    "Total Assets": "$",
+    "Return on Asset Ratio": "%",
+    "Payables And Accrued Expenses": "$",
+    "Current Debt": "$",
+    "Long Term Debt": "$",
+    "Current Liabilities": "$",
+    "Total Non Current Liabilities Net Minority Interest": "$",
+    "Total Liabilities Net Minority Interest": "$",
+    "Net Debt": "$",
+    "Total Debt": "$",
+    "Debt to Shareholders Equity Ratio": "%",
+    "Common Stock": "$",
+    "Retained Earnings": "$",
+    "Treasury Shares Number": 'None',  # No symbol provided
+    "Stockholders Equity": "$",
+    "Return on Shareholders Equity": "%",
+    "Free Cash Flow": "$",
+    "Net Income": "$",
+    "Net Income From Continuing Operations": "$",
+    "Capital Expenditures %": "%",
+    "Net Common Stock Issuance": "$",
+    "Current Stock Price": "$",
+    "Trailing P/E": "$",
+    "Forward P/E": "$",
+    "Trailing PEG Ratio": "$",
+    "P/FCF": "$",
+    "Discounted Cash Flow Model": "$",
+    "Peter Lynch's Valuation": "$",
+    "Benjamin Graham's Valuation": "$",
+    "Multiples Valuation": "$",
+    "Dividend Discount Mode":"$",
+    "Total Non Current Assets":"$",
+    "Treasury-adjusted Debt Shareholders Equity Ratio":"$"
+}
+
 def statement_create(ticker_data,statement_type):
     if statement_type=="income_statement":
         return ticker_data.income_stmt
@@ -86,7 +143,7 @@ def DictMake(statement,val):
         dict[index] = row[statement.columns[val]]
     return dict
 
-def process_data(data):
+'''def process_data(data):
     processed_data = {}
     for year, values in data.items():
         processed_values = {}
@@ -96,7 +153,7 @@ def process_data(data):
             else:
                 processed_values[key] = value
         processed_data[year] = processed_values
-    return processed_data
+    return processed_data'''
 
 def yoy(dict,years,select_categories):
     yoy_dict={}
@@ -114,6 +171,48 @@ def yoy(dict,years,select_categories):
 def keys_to_strings(dict):
     return {str(key): value for key, value in dict.items()}
 
+def process_data(dict,full_categories):
+    processed_data={}
+    years=dict.keys()
+    for year in dict.keys():
+        processed_year={}
+        this_year=dict[year]
+        for category in this_year.keys():
+            value_type=full_categories[category]
+            val=this_year[category]
+            if value_type=='$':
+                if val >= 1_000_000_000 or val <= -1_000_000_000:
+                    val = f"{val / 1_000_000_000:.1f}B"
+                elif val >= 1_000_000 or val <= -1_000_000:
+                    val = f"{val / 1_000_000:.1f}M"
+                elif val >= 1_000 or val <= -1_000:
+                    val = f"{val / 1_000:.1f}K"
+                else:
+                    val = f"{val:.3f}"
+                val='$'+val
+                processed_year[category]=val
+            if value_type=='None':
+                val = str("{:.2f}".format(val))
+                processed_year[category]=val
+            if value_type=='%':
+                val=float(val)
+                val=val*100
+                val= f"{val:.2f}%"
+                processed_year[category]=val
+        processed_data[year]=processed_year
+    yoydict=dict["YoY(past year)"]
+    processed_year={}
+    for category in yoydict.keys():
+        val=yoydict[category]
+        val=float(val)
+        val=val*100
+        val= f"{val:.2f}%"
+        processed_year[category]=val
+    processed_data["YoY(past year)"]=processed_year
+    return processed_data
+
+
+
 
 def final_dict(ticker_data,statement_type):
     statement=statement_create(ticker_data,statement_type)
@@ -130,7 +229,7 @@ def final_dict(ticker_data,statement_type):
                 del full_dict[element]
         complete_dict[year]=full_dict
         val=val+1
-    complete_dict["Year over year(past year)"]=yoy(complete_dict,years,full_dict.keys())
-    processed_data=process_data(complete_dict)
+    complete_dict["YoY(past year)"]=yoy(complete_dict,years,full_dict.keys())
+    processed_data=process_data(complete_dict,categories)
     corrected_dict=keys_to_strings(processed_data)
     return corrected_dict
