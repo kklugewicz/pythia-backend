@@ -105,6 +105,7 @@ def growth_rate(table):
 def valuation(table,ticker_data):
     valuation_table={}
     valuation_table["Current Stock Price"]=ticker_data.info.get('currentPrice')
+    valuation_table["Market Cap"]=ticker_data.info.get('marketCap')
     valuation_table["Trailing P/E"]=ticker_data.info.get('trailingPE')
     valuation_table["Forward P/E"]=ticker_data.info.get('forwardPE')
     valuation_table["Trailing PEG Ratio"]=ticker_data.info.get('trailingPegRatio')

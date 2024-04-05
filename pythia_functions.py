@@ -45,6 +45,8 @@ categories = {
     "Stockholders Equity": "$",
     "Return on Shareholders Equity": "%",
     "Free Cash Flow": "$",
+    "Market Cap": "$",
+    "EBITDA": "$",
     "Net Income": "$",
     "Net Income From Continuing Operations": "$",
     "Capital Expenditures %": "%",
@@ -73,7 +75,7 @@ def statement_create(ticker_data,statement_type):
 
 def select_list(statement_type):
     if statement_type=="income_statement":
-        return ('SGA%', 'R&D%', 'Depreciation %', 'Operating Expense %', 'Interest Expense %','Operating Margin','Total Revenue', 'Cost Of Revenue', 'Gross Profit', 'Gross Profit Margin', 'Pretax Income', 'Net Earnings', 'Basic EPS', 'Net Earnings to Total')
+        return ('SGA%', 'R&D%', 'Depreciation %', 'Operating Expense %', 'Interest Expense %','Operating Margin','Total Revenue', 'Cost Of Revenue', 'Gross Profit', 'Gross Profit Margin', 'Pretax Income', 'EBITDA','Net Earnings', 'Basic EPS', 'Net Earnings to Total')
     if statement_type=="cashflow":
         return ('Free Cash Flow','Net Income','Net Income From Continuing Operations','Capital Expenditures %', 'Net Common Stock Issuance')
     if statement_type=="assets_balance_sheet":
@@ -81,7 +83,7 @@ def select_list(statement_type):
     if statement_type=="liabilities_balance_sheet":
         return ('Payables And Accrued Expenses','Current Debt', 'Long Term Debt','Current Liabilities','Total Non Current Liabilities Net Minority Interest','Total Liabilities Net Minority Interest','Net Debt','Total Debt','Debt to Shareholders Equity Ratio')
     if statement_type=="treasury_balance_sheet":
-        return ('Common Stock','Retained Earnings','Treasury Shares Number','Stockholders Equity','Return on Shareholders Equity','Adjusted Return on Equity')
+        return ('Common Stock','Capital Expenditures %','Retained Earnings','Treasury Shares Number','Stockholders Equity','Return on Shareholders Equity','Adjusted Return on Equity')
      
 def add_categories(ticker_data,dict,statement_type,year):
     output_dict = dict.copy()
@@ -102,7 +104,7 @@ def add_categories(ticker_data,dict,statement_type,year):
                                     output_dict.get('Tax Provision', 0) - 
                                     output_dict.get('Other Non Operating Income Expenses', 0) + 
                                     output_dict.get('Interest Income Non Operating', 0))
-        output_dict['Operating Margin']=(output_dict.get('Operating Income')/output_dict.get('Total Revenue'))*100
+        output_dict['Operating Margin']=output_dict.get('Operating Income')/output_dict.get('Total Revenue')
         output_dict['Gross Profit Margin'] = output_dict.get('Gross Profit', 0) / output_dict.get('Total Revenue', 1)
         output_dict['SGA%'] = output_dict.get('Selling General And Administration', 0) / output_dict.get('Gross Profit', 1)
         output_dict['R&D%'] = output_dict.get('Research And Development', 0) / output_dict.get('Gross Profit', 1)
@@ -112,13 +114,13 @@ def add_categories(ticker_data,dict,statement_type,year):
         output_dict['Interest Expense %'] = output_dict.get('Interest Expense', 0) / output_dict.get('Total Revenue', 1)
         return output_dict
     elif statement_type=="cashflow":
-        output_dict['Capital Expenditures %'] = output_dict.get('Capital Expenditure', 0) / output_dict['Net Income']
+        output_dict['Capital Expenditures %'] = (output_dict.get('Capital Expenditure', 0) *-1) / output_dict['Net Income']
         return output_dict
     else:
         output_dict['Fixed Asset Turnover Ratio']=financials.loc['Total Revenue',use_year]/output_dict.get('Net PPE')
         output_dict['Current Ratio'] = output_dict.get('Current Assets', 0) / output_dict['Current Liabilities']
         output_dict['Return on Asset Ratio']= output_dict.get('Net Income', 0) / output_dict['Total Assets']
-        output_dict['Debt to Shareholders Equity Ratio'] = output_dict.get('Total Liabilities Net Minority Interest', 0) / output_dict['Stockholders Equity']
+        output_dict['Debt to Shareholders Equity Ratio'] = output_dict.get('Total Debt', 0) / output_dict['Stockholders Equity']
         output_dict['Treasury-adjusted Debt Shareholders Equity Ratio']= output_dict.get('Total Liabilities Net Minority Interest', 0) / (output_dict['Stockholders Equity'] + output_dict['Capital Stock'])
         output_dict['Return on Shareholders Equity'] = output_dict.get('Net Income', 0) / output_dict['Stockholders Equity']
         return output_dict
