@@ -109,7 +109,8 @@ def valuation(table,ticker_data):
     valuation_table["Trailing P/E"]=ticker_data.info.get('trailingPE')
     valuation_table["Forward P/E"]=ticker_data.info.get('forwardPE')
     valuation_table["Trailing PEG Ratio"]=ticker_data.info.get('trailingPegRatio')
-    valuation_table["P/FCF"]=ticker_data.info.get('freeCashflow')/ticker_data.info.get('currentPrice')
+    if type(ticker_data.info.get('freeCashflow')) == float:
+        valuation_table["P/FCF"]=ticker_data.info.get('freeCashflow')/ticker_data.info.get('currentPrice')
     #valuation_table["Discounted CashFlow"]=discounted_cashflow(table,ticker_data)
     #earnings_growth_rate=growth_rate(table)
     #valuation_table["Peter Lynch's Valuation"]=(earnings_growth_rate+ticker_data.info.get('dividendYield'))/ticker_data.info.get('trailingPE')

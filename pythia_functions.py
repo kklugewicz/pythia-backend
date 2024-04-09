@@ -104,7 +104,8 @@ def add_categories(ticker_data,dict,statement_type,year):
                                     output_dict.get('Tax Provision', 0) - 
                                     output_dict.get('Other Non Operating Income Expenses', 0) + 
                                     output_dict.get('Interest Income Non Operating', 0))
-        output_dict['Operating Margin']=output_dict.get('Operating Income')/output_dict.get('Total Revenue')
+        if type(output_dict.get('Operating Income'))== float:
+            output_dict['Operating Margin']=output_dict.get('Operating Income')/output_dict.get('Total Revenue')
         output_dict['Gross Profit Margin'] = output_dict.get('Gross Profit', 0) / output_dict.get('Total Revenue', 1)
         output_dict['SGA%'] = output_dict.get('Selling General And Administration', 0) / output_dict.get('Gross Profit', 1)
         output_dict['R&D%'] = output_dict.get('Research And Development', 0) / output_dict.get('Gross Profit', 1)
@@ -118,7 +119,8 @@ def add_categories(ticker_data,dict,statement_type,year):
         return output_dict
     else:
         output_dict['Fixed Asset Turnover Ratio']=financials.loc['Total Revenue',use_year]/output_dict.get('Net PPE')
-        output_dict['Current Ratio'] = output_dict.get('Current Assets', 0) / output_dict['Current Liabilities']
+        if type(output_dict.get('Current Liabilities'))== float:
+            output_dict['Current Ratio'] = output_dict.get('Current Assets', 0) / output_dict['Current Liabilities']
         output_dict['Return on Asset Ratio']= output_dict.get('Net Income', 0) / output_dict['Total Assets']
         output_dict['Debt to Shareholders Equity Ratio'] = output_dict.get('Total Debt', 0) / output_dict['Stockholders Equity']
         output_dict['Treasury-adjusted Debt Shareholders Equity Ratio']= output_dict.get('Total Liabilities Net Minority Interest', 0) / (output_dict['Stockholders Equity'] + output_dict['Capital Stock'])
