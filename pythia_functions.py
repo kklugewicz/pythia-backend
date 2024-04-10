@@ -106,11 +106,12 @@ def add_categories(ticker_data,dict,statement_type,year):
                                     output_dict.get('Interest Income Non Operating', 0))
         if type(output_dict.get('Operating Income'))== float:
             output_dict['Operating Margin']=output_dict.get('Operating Income')/output_dict.get('Total Revenue')
-        output_dict['Gross Profit Margin'] = output_dict.get('Gross Profit', 0) / output_dict.get('Total Revenue', 1)
-        output_dict['SGA%'] = output_dict.get('Selling General And Administration', 0) / output_dict.get('Gross Profit', 1)
-        output_dict['R&D%'] = output_dict.get('Research And Development', 0) / output_dict.get('Gross Profit', 1)
-        output_dict['Depreciation %'] = output_dict.get('Reconciled Depreciation', 0) / output_dict.get('Gross Profit', 1)
-        output_dict['Operating Expense %'] = output_dict.get('Operating Expense', 0) / output_dict.get('Gross Profit', 1)
+        if ("Gross Profit" in output_dict.keys()):
+            output_dict['Gross Profit Margin'] = output_dict.get('Gross Profit', 0) / output_dict.get('Total Revenue', 1)
+            output_dict['SGA%'] = output_dict.get('Selling General And Administration', 0) / output_dict.get('Gross Profit', 1)
+            output_dict['R&D%'] = output_dict.get('Research And Development', 0) / output_dict.get('Gross Profit', 1)
+            output_dict['Depreciation %'] = output_dict.get('Reconciled Depreciation', 0) / output_dict.get('Gross Profit', 1)
+            output_dict['Operating Expense %'] = output_dict.get('Operating Expense', 0) / output_dict.get('Gross Profit', 1)
         output_dict['Net Earnings to Total'] = output_dict.get('Net Earnings', 0) / output_dict.get('Total Revenue', 1)
         output_dict['Interest Expense %'] = output_dict.get('Interest Expense', 0) / output_dict.get('Total Revenue', 1)
         return output_dict
@@ -147,18 +148,6 @@ def DictMake(statement,val):
         dict[index] = row[statement.columns[val]]
     return dict
 
-'''def process_data(data):
-    processed_data = {}
-    for year, values in data.items():
-        processed_values = {}
-        for key, value in values.items():
-            if isinstance(value, float) and math.isnan(value):
-                processed_values[key] = 0
-            else:
-                processed_values[key] = value
-        processed_data[year] = processed_values
-    return processed_data'''
-
 def yoy(dict,years,select_categories):
     yoy_dict={}
     thisyear=years[0]
@@ -182,9 +171,14 @@ def process_data(dict,full_categories):
         processed_year={}
         this_year=dict[year]
         for category in this_year.keys():
-            value_type=full_categories[category]
+            if category in full_categories.keys():
+                value_type=full_categories[category]
+            else:
+                value_type='none'
             val=this_year[category]
-            if value_type=='$':
+            if val == 0:
+                val = 0
+            elif value_type=='$':
                 if val >= 1_000_000_000 or val <= -1_000_000_000:
                     val = f"{val / 1_000_000_000:.1f}B"
                 elif val >= 1_000_000 or val <= -1_000_000:
@@ -195,10 +189,10 @@ def process_data(dict,full_categories):
                     val = f"{val:.3f}"
                 val='$'+val
                 processed_year[category]=val
-            if value_type=='None':
+            elif value_type=='None':
                 val = str("{:.2f}".format(val))
                 processed_year[category]=val
-            if value_type=='%':
+            elif value_type=='%':
                 val=float(val)
                 val=val*100
                 val= f"{val:.1f}%"
@@ -208,15 +202,15 @@ def process_data(dict,full_categories):
     processed_year={}
     for category in yoydict.keys():
         val=yoydict[category]
-        val=float(val)
-        val=val*100
-        val= f"{val:.2f}%"
-        processed_year[category]=val
+        if val==0:
+            val=0
+        else:
+            val=float(val)
+            val=val*100
+            val= f"{val:.2f}%"
+            processed_year[category]=val
     processed_data["YoY(past year)"]=processed_year
     return processed_data
-
-
-
 
 def final_dict(ticker_data,statement_type):
     statement=statement_create(ticker_data,statement_type)
@@ -228,9 +222,9 @@ def final_dict(ticker_data,statement_type):
     for year in years:
         basic_dict=DictMake(statement,val)
         full_dict=add_categories(ticker_data,basic_dict,statement_type,year)
-        for element in all_categories:
+        '''for element in all_categories:
             if element not in select_categories:
-                del full_dict[element]
+                del full_dict[element]'''
         complete_dict[year]=full_dict
         val=val+1
     complete_dict["YoY(past year)"]=yoy(complete_dict,years,full_dict.keys())

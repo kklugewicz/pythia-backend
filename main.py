@@ -23,7 +23,9 @@ def main():
     if ticker_symbol is None:
         return 'Error: Ticker symbol not provided', 400
     ticker_data = yf.Ticker(ticker_symbol)
+    info=ticker_data.info
     table={}
+    table['Summary']=info['longBusinessSummary']
     table['Company Name']=ticker_data.info['longName']
     table['IS']=final_dict(ticker_data,"income_statement")
     table['ABS']=final_dict(ticker_data,"assets_balance_sheet")
@@ -31,6 +33,8 @@ def main():
     table['TBS']=final_dict(ticker_data,"treasury_balance_sheet")
     table['CF']=final_dict(ticker_data,"cashflow")
     table['Valuations']=valuation(table,ticker_data)
+    table['Basics']=basic_info(table,ticker_data)
+    print(table)
     return table
 
 if __name__ == '__main__':
