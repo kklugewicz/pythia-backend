@@ -85,12 +85,13 @@ def select_list(statement_type):
     if statement_type=="treasury_balance_sheet":
         return ('Common Stock','Capital Expenditures %','Retained Earnings','Treasury Shares Number','Stockholders Equity','Return on Shareholders Equity','Adjusted Return on Equity')
      
-def add_categories(ticker_data,dict,statement_type,year):
+def add_categories(ticker_data,dict,statement_type,datestring):
     output_dict = dict.copy()
     financials=ticker_data.financials
     column_dates = pd.to_datetime(financials.columns)
+    year=datestring.split('/')[2]
     for date in column_dates:
-        if date.year == year:
+        if str(date.year) == year:
             use_year = date
     use_year = str(use_year.strftime('%Y-%m-%d'))
     output_dict['Net Income']=financials.loc['Net Income',use_year]
@@ -132,14 +133,25 @@ def categories_list(statement):
     row_names = statement.index.tolist()
     return row_names
 
-def years_list(statement):
+def dates_list(statement):
     years = []
-    pattern=r'\b\d{4}\b'
+    '''pattern=r'\b\d{4}\b'
     num_rows=statement.shape[1]
     for i in range(num_rows):
         Year=str(statement.columns[i])
         Year=re.findall(pattern,Year)
-        years.append(int(Year[0]))
+        years.append(int(Year[0]))'''
+    pattern = r'\b(\d{4})-(\d{2})-(\d{2})\b'  # Regular expression pattern to match YYYY-MM-DD
+    num_rows = statement.shape[1]
+    for i in range(num_rows):
+        year_month_day = str(statement.columns[i])  # Convert column name to string
+        match = re.search(pattern, year_month_day)  # Search for the pattern in the column name
+        if match:
+            year = match.group(1)
+            month = match.group(2)
+            day = match.group(3)
+            date_string = f"{month}/{day}/{year}"  # Construct the date string in MM/DD/YYYY format
+            years.append(date_string)
     return years
 
 def DictMake(statement,val):
@@ -148,14 +160,19 @@ def DictMake(statement,val):
         dict[index] = row[statement.columns[val]]
     return dict
 
-def yoy(dict,years,select_categories):
+def yoy(dict,select_categories):
     yoy_dict={}
+    years=list(dict.keys())
     thisyear=years[0]
     thisyear_dict=dict[thisyear]
     lastyear=years[1]
     lastyear_dict=dict[lastyear]
     for element in select_categories:
-        if lastyear_dict[element]==0:
+        if element not in lastyear_dict or element not in thisyear_dict:
+            yoy_dict[element]=0
+        elif lastyear_dict[element]==0:
+            yoy_dict[element]=0
+        elif lastyear_dict=='nan' or thisyear_dict=='nan': 
             yoy_dict[element]=0
         else:
             yoy_dict[element]=(thisyear_dict[element]-lastyear_dict[element])/lastyear_dict[element]
@@ -198,7 +215,7 @@ def process_data(dict,full_categories):
                 val= f"{val:.1f}%"
                 processed_year[category]=val
         processed_data[year]=processed_year
-    yoydict=dict["YoY(past year)"]
+    yoydict=dict["YoY"]
     processed_year={}
     for category in yoydict.keys():
         val=yoydict[category]
@@ -209,25 +226,73 @@ def process_data(dict,full_categories):
             val=val*100
             val= f"{val:.2f}%"
             processed_year[category]=val
-    processed_data["YoY(past year)"]=processed_year
+    processed_data["YoY"]=processed_year
     return processed_data
+
+def add_quarterly(dict,ticker_data,statement_type):
+    if statement_type=="income_statement":
+        statement = ticker_data.quarterly_income_stmt
+    elif statement_type=="cashflow":
+        statement = ticker_data.quarterly_cashflow
+    else:
+        statement = ticker_data.quarterly_balance_sheet
+    years = []
+    pattern = r'\b(\d{4})-(\d{2})-(\d{2})\b'  # Regular expression pattern to match YYYY-MM-DD
+    num_rows = statement.shape[1]
+    for i in range(num_rows):
+        year_month_day = str(statement.columns[i])  # Convert column name to string
+        match = re.search(pattern, year_month_day)  # Search for the pattern in the column name
+        if match:
+            year = match.group(1)
+            month = match.group(2)
+            day = match.group(3)
+            date_string = f"{month}/{day}/{year}"  # Construct the date string in MM/DD/YYYY format
+            years.append(date_string)
+    final_quarter=years[len(years)-4]
+    formated_quarter=format_date(final_quarter)
+    quarter_dict=DictMake(statement,len(years)-4)
+    quarter_dict=add_categories(ticker_data,quarter_dict,statement_type,final_quarter)
+    dict[formated_quarter]=quarter_dict
+    return dict
+
+def format_date(date_string):
+    # Split the date string into month, day, and year components
+    month, day, year = date_string.split('/')
+
+    # Convert the month component to an integer
+    month = int(month)
+
+    # Determine the quarter based on the month
+    if 1 <= month <= 3:
+        quarter = 'Q1'
+    elif 4 <= month <= 6:
+        quarter = 'Q2'
+    elif 7 <= month <= 9:
+        quarter = 'Q3'
+    else:
+        quarter = 'Q4'
+
+    # Return the formatted quarter and year
+    return f"{quarter} {year}"
 
 def final_dict(ticker_data,statement_type):
     statement=statement_create(ticker_data,statement_type)
     select_categories=select_list(statement_type)
     all_categories=categories_list(statement)
-    years=years_list(statement)
+    dates=dates_list(statement)
     complete_dict={}
     val=0
-    for year in years:
+    for date in dates:
         basic_dict=DictMake(statement,val)
-        full_dict=add_categories(ticker_data,basic_dict,statement_type,year)
+        full_dict=add_categories(ticker_data,basic_dict,statement_type,date)
         '''for element in all_categories:
             if element not in select_categories:
                 del full_dict[element]'''
-        complete_dict[year]=full_dict
+        formated_date=format_date(date)
+        complete_dict[formated_date]=full_dict
         val=val+1
-    complete_dict["YoY(past year)"]=yoy(complete_dict,years,full_dict.keys())
+    complete_dict=add_quarterly(complete_dict,ticker_data,statement_type)
+    complete_dict["YoY"]=yoy(complete_dict,full_dict.keys())
     processed_data=process_data(complete_dict,categories)
     corrected_dict=keys_to_strings(processed_data)
     return corrected_dict
