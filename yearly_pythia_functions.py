@@ -287,7 +287,7 @@ def yearly_dict(ticker_data,statement_type):
         formated_date=format_date(date)
         complete_dict[formated_date]=full_dict
         val=val+1
-    complete_dict["QoQ"]=yoy(complete_dict,full_dict.keys())
+    complete_dict["YoY"]=yoy(complete_dict,full_dict.keys())
     processed_data=process_data(complete_dict,categories)
     corrected_dict=keys_to_strings(processed_data)
     return corrected_dict
