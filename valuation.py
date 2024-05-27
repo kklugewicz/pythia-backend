@@ -5,7 +5,7 @@ import json
 from flask import request, Flask
 from flask_cors import CORS
 import math
-from pythia_functions import *
+from yearly_pythia_functions import *
 
 def aprocess_data(data):
     processed_data = {}
@@ -33,7 +33,6 @@ def discounted_cashflow(table, ticker_data):
         free_cash_flow = year["Free Cash Flow"]
         yearly_free_cash_flows.append(free_cash_flow)
 
-    print(yearly_free_cash_flows)
 
     for i in range(len(yearly_free_cash_flows) - 1):
         this_year = yearly_free_cash_flows[i]
@@ -41,10 +40,7 @@ def discounted_cashflow(table, ticker_data):
         growth_rate = (this_year - last_year) / last_year
         company_growth_rate.append(growth_rate)
 
-    print(company_growth_rate)
-
     average_growth_rate = sum(company_growth_rate) / len(company_growth_rate)
-    print(average_growth_rate)
     FFCF = []
     this_year_FCF = yearly_free_cash_flows[0]
 
@@ -54,19 +50,14 @@ def discounted_cashflow(table, ticker_data):
         this_year_FCF = year_FFCF
 
     FFCF_terminal_value = (FFCF[8] * (1 + perpetual_growth_rate)) / (perpetual_growth_rate + discount_rate)
-    print("FFCF8")
-    print (FFCF[8])
-    FFCF.append(FFCF_terminal_value)
 
-    print("FFCF")
-    print(FFCF)
+    FFCF.append(FFCF_terminal_value)
 
     PV_FFCF = []
     for i in range(9):  
         PV = FFCF[i] / ((1 + discount_rate) ** (i + 1))
         PV_FFCF.append(PV)
 
-    print(PV_FFCF)
     
     sum_PV_FFCF = sum(PV_FFCF)
 
@@ -77,7 +68,6 @@ def discounted_cashflow(table, ticker_data):
     total_shares_outstanding = ticker_data.info.get('sharesOutstanding')
     equity_value = sum_PV_FFCF + cash_and_equivalents - total_debt
     dcf = equity_value / total_shares_outstanding
-    print (dcf)
     return dcf
     
 def growth_rate(table):
