@@ -120,7 +120,8 @@ def add_categories(ticker_data,dict,statement_type,datestring):
         output_dict['Capital Expenditures %'] = (output_dict.get('Capital Expenditure', 0) *-1) / output_dict['Net Income']
         return output_dict
     else:
-        output_dict['Fixed Asset Turnover Ratio']=financials.loc['Total Revenue',use_year]/output_dict.get('Net PPE')
+        if ('Net PPE' in output_dict.keys()):
+            output_dict['Fixed Asset Turnover Ratio']=financials.loc['Total Revenue',use_year]/output_dict.get('Net PPE')
         if type(output_dict.get('Current Liabilities'))== float:
             output_dict['Current Ratio'] = output_dict.get('Current Assets', 0) / output_dict['Current Liabilities']
         output_dict['Return on Asset Ratio']= output_dict.get('Net Income', 0) / output_dict['Total Assets']

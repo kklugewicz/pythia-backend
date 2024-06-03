@@ -120,7 +120,8 @@ def add_categories(ticker_data,dict,statement_type,datestring):
         output_dict['Capital Expenditures %'] = (output_dict.get('Capital Expenditure', 0) *-1) / output_dict['Net Income']
         return output_dict
     else:
-        output_dict['Fixed Asset Turnover Ratio']=financials.loc['Total Revenue',use_year]/output_dict.get('Net PPE')
+        if ('Net PPE' in output_dict.keys()):
+                output_dict['Fixed Asset Turnover Ratio']=financials.loc['Total Revenue',use_year]/output_dict.get('Net PPE')
         if type(output_dict.get('Current Liabilities'))== float:
             output_dict['Current Ratio'] = output_dict.get('Current Assets', 0) / output_dict['Current Liabilities']
         output_dict['Return on Asset Ratio']= output_dict.get('Net Income', 0) / output_dict['Total Assets']
@@ -263,14 +264,14 @@ def format_date(date_string):
     month = int(month)
 
     # Determine the quarter based on the month
-    if 1 <= month <= 3:
-        quarter = 'Q1'
-    elif 4 <= month <= 6:
-        quarter = 'Q2'
-    elif 7 <= month <= 9:
-        quarter = 'Q3'
-    else:
+    if 1 <= month <= 2 or month == 12:
         quarter = 'Q4'
+    elif 3 <= month <= 5:
+        quarter = 'Q1'
+    elif 6 <= month <= 8:
+        quarter = 'Q2'
+    else:
+        quarter = 'Q3'
 
     # Return the formatted quarter and year
     return f"{quarter} {year}"
