@@ -116,7 +116,7 @@ def basic_info(table,ticker_data):
     financials = ticker_data.info
     if ('lastDividendValue' in financials.keys()):
         print("yes")
-        basic_table['Annual Dividend'] = ticker_data.info.get('dividendRate') * ticker_data.info.get('lastDividendValue')
+        basic_table['Annual Dividend'] = float(ticker_data.info.get('dividendYield') * ticker_data.info.get('currentPrice')) / 100
         print(basic_table['Annual Dividend'])
     current_basic_table={}
     current_basic_table["current"]=basic_table
