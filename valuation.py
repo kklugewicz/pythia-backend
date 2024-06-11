@@ -113,6 +113,11 @@ def basic_info(table,ticker_data):
     basic_table['Industry']=ticker_data.info.get('industry')
     basic_table["Current Stock Price"]=ticker_data.info.get('currentPrice')
     basic_table["Market Cap"]=ticker_data.info.get('marketCap')
+    financials = ticker_data.info
+    if ('lastDividendValue' in financials.keys()):
+        print("yes")
+        basic_table['Annual Dividend'] = ticker_data.info.get('dividendRate') * ticker_data.info.get('lastDividendValue')
+        print(basic_table['Annual Dividend'])
     current_basic_table={}
     current_basic_table["current"]=basic_table
     processed_data=aprocess_data(current_basic_table)

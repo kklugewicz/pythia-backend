@@ -21,6 +21,7 @@ CORS(app)
 def main():
     data=getInput()
     ticker_symbol=data['ticker']
+    ticker_symbol=ticker_symbol.replace(" ","")
     span=data['timeframe']
     print(data)
     if ticker_symbol is None:
