@@ -431,15 +431,23 @@ def format_date(date_string):
     return f"{quarter} {year}"        
 
 def quarterly_dict(ticker_data,statement_type):
+    print('hello')
     statement=statement_create(ticker_data,statement_type)
+    print(statement)
     dates=dates_list(statement)
     if len(dates)>4:
         dates=dates[:-1]
     complete_dict={}
     val=0
+    print('dates')
+    print(dates)
     for date in dates:
         basic_dict=DictMake(statement,val)
+        print("basic dict ")
+        print(basic_dict)
         full_dict=add_categories(ticker_data,basic_dict,statement_type,date)
+        print("full dict ")
+        print(full_dict)
         formated_date=format_date(date)
         complete_dict[formated_date]=full_dict
         val=val+1
