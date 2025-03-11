@@ -446,12 +446,15 @@ def quarterly_dict(ticker_data,statement_type):
         print("basic dict ")
         print(basic_dict)
         full_dict=add_categories(ticker_data,basic_dict,statement_type,date)
-        print("full dict ")
+        print("full dict")
         print(full_dict)
         formated_date=format_date(date)
         complete_dict[formated_date]=full_dict
         val=val+1
-    complete_dict["QoQ"]=yoy(complete_dict,full_dict.keys())
+    if full_dict:
+        complete_dict["QoQ"]=yoy(complete_dict,full_dict.keys())
+    else:
+        complete_dict["QoQ"]=yoy(complete_dict,complete_dict.keys())
     processed_data=process_data(complete_dict,categories)
     corrected_dict=keys_to_strings(processed_data)
     return corrected_dict
