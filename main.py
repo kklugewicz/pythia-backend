@@ -28,7 +28,7 @@ def main():
         return 'Error: Ticker symbol not provided', 400
     ticker_data = yf.Ticker(ticker_symbol)
     #info=ticker_data.info
-    #table={}
+    table={}
     table['Summary']='Sorry not available at this time'
     #table['Summary']=info['longBusinessSummary']
     table['Company Name']=ticker_data.info['longName']
