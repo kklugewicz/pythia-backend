@@ -27,9 +27,10 @@ def main():
     if ticker_symbol is None:
         return 'Error: Ticker symbol not provided', 400
     ticker_data = yf.Ticker(ticker_symbol)
-    info=ticker_data.info
-    table={}
-    table['Summary']=info['longBusinessSummary']
+    #info=ticker_data.info
+    #table={}
+    table['Summary']='Sorry not available at this time'
+    #table['Summary']=info['longBusinessSummary']
     table['Company Name']=ticker_data.info['longName']
     if span=='Yearly':
         table['IS']=yearly_dict(ticker_data,"income_statement")
