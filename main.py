@@ -31,7 +31,8 @@ def main():
     table={}
     table['Summary']='Sorry not available at this time'
     #table['Summary']=info['longBusinessSummary']
-    table['Company Name']=ticker_data.info['longName']
+    #table['Company Name']=ticker_data.info['longName']
+    table['Company Name']="not available"
     if span=='Yearly':
         table['IS']=yearly_dict(ticker_data,"income_statement")
         table['ABS']=yearly_dict(ticker_data,"assets_balance_sheet")
